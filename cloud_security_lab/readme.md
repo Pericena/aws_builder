@@ -145,7 +145,7 @@ aws-cloud-security-lab/
 ├── 03-IAM/
 ├── 04-MFA/
 ├── 05-CloudWatch/
-└── 06-CloudTrail/
+└── 06-CloudTra
 ```
 
 ---
