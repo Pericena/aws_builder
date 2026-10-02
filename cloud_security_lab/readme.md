@@ -150,6 +150,20 @@ aws-cloud-security-lab/
 
 ---
 
+
+## Video del laboratorio
+
+El proyecto incluye una demostración en video donde se muestra el laboratorio de AWS Cloud Security, las configuraciones realizadas y las principales medidas de seguridad implementadas.
+
+### Demo
+
+[▶️ Reproducir AWS Cloud Security Lab Demo](videos/ecomerce_aws.mp4)
+
+El video complementa la documentación técnica y permite visualizar de forma práctica el proceso realizado durante el laboratorio.
+
+
+
+
 ## Resultado esperado
 
 Al finalizar el proyecto se contará con un laboratorio documentado que permita demostrar, de manera práctica, cómo revisar y mejorar aspectos básicos de seguridad en una infraestructura desplegada en AWS.
