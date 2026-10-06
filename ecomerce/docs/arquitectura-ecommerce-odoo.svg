@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" role="img" aria-labelledby="title desc">
+  <title id="title">Arquitectura del e-commerce con Odoo en AWS EC2</title>
+  <desc id="desc">Un celular sirve para conectarse por SSH a una instancia Ubuntu en Amazon EC2 y abrir Odoo en el navegador. Docker Compose ejecuta Odoo 19 y PostgreSQL 15 en contenedores separados. Odoo accede a PostgreSQL por la red privada de Docker. Los volúmenes Docker guardan los datos y la carpeta addons se monta en el contenedor Odoo.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f6f9ff"/>
+      <stop offset="1" stop-color="#eaf1fb"/>
+    </linearGradient>
+    <linearGradient id="aws" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff9ed"/>
+      <stop offset="1" stop-color="#fff0d4"/>
+    </linearGradient>
+    <filter id="shadow" x="-15%" y="-15%" width="130%" height="140%">
+      <feDropShadow dx="0" dy="5" stdDeviation="8" flood-color="#1a3555" flood-opacity=".12"/>
+    </filter>
+    <marker id="arrowBlue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M1 1 11 6 1 11Z" fill="#2675b9"/>
+    </marker>
+    <marker id="arrowOrange" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M1 1 11 6 1 11Z" fill="#db8518"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M1 1 11 6 1 11Z" fill="#24835d"/>
+    </marker>
+    <style>
+      text{font-family:Arial,Helvetica,sans-serif;fill:#18324d}
+      .title{font-size:32px;font-weight:700}
+      .subtitle{font-size:16px;fill:#526a83}
+      .heading{font-size:19px;font-weight:700}
+      .label{font-size:15px;font-weight:700}
+      .body{font-size:13px;fill:#415a73}
+      .small{font-size:12px;fill:#526a83}
+      .tiny{font-size:11px;fill:#5e7288}
+      .panel{fill:#fff;stroke:#d5e0eb;stroke-width:1.5}
+      .blueLine{stroke:#2675b9;stroke-width:3;fill:none;marker-end:url(#arrowBlue)}
+      .orangeLine{stroke:#db8518;stroke-width:3;fill:none;marker-end:url(#arrowOrange)}
+      .greenLine{stroke:#24835d;stroke-width:3;fill:none;marker-end:url(#arrowGreen)}
+      .network{fill:#f6f9fd;stroke:#b9cadb;stroke-width:1.5;stroke-dasharray:8 6}
+    </style>
+  </defs>
+
+  <rect width="1440" height="900" rx="24" fill="url(#background)"/>
+  <text x="64" y="66" class="title">De mi celular a un e-commerce con Odoo en AWS</text>
+  <text x="64" y="96" class="subtitle">Administración móvil · Amazon EC2 · Docker Compose · Odoo 19 · PostgreSQL 15</text>
+
+  <g filter="url(#shadow)">
+    <rect x="58" y="169" width="255" height="430" rx="22" class="panel"/>
+    <rect x="85" y="194" width="112" height="207" rx="19" fill="#18324d"/>
+    <rect x="94" y="211" width="94" height="165" rx="11" fill="#f2f7fc"/>
+    <rect x="127" y="385" width="27" height="4" rx="2" fill="#a7b8c9"/>
+    <text x="211" y="239" class="heading">Celular</text>
+    <text x="211" y="267" class="body">Equipo de</text>
+    <text x="211" y="287" class="body">trabajo y prueba</text>
+    <line x1="211" y1="306" x2="278" y2="306" stroke="#d8e2ec"/>
+    <text x="211" y="332" class="small">Terminal SSH</text>
+    <text x="211" y="352" class="small">Navegador móvil</text>
+    <rect x="81" y="432" width="209" height="64" rx="12" fill="#e8f3fd"/>
+    <text x="98" y="458" class="label">Administrar</text>
+    <text x="98" y="480" class="small">SSH · Git · Docker Compose</text>
+    <rect x="81" y="510" width="209" height="64" rx="12" fill="#e9f6ef"/>
+    <text x="98" y="536" class="label">Probar Odoo</text>
+    <text x="98" y="558" class="small">Desde el navegador del móvil</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="403" y="142" width="967" height="557" rx="24" fill="url(#aws)" stroke="#e9c98e" stroke-width="2"/>
+    <text x="439" y="184" class="heading">Amazon Web Services</text>
+    <text x="439" y="207" class="small">Grupo de seguridad de EC2: SSH limitado y puerto web controlado</text>
+
+    <rect x="458" y="241" width="875" height="414" rx="20" class="panel"/>
+    <rect x="458" y="241" width="875" height="68" rx="20" fill="#eef5fc"/>
+    <path d="M458 289v20h875v-20" fill="#eef5fc"/>
+    <text x="492" y="278" class="heading">Instancia EC2 · Ubuntu Server</text>
+    <text x="492" y="298" class="small">Servidor Linux que ejecuta la aplicación</text>
+
+    <rect x="496" y="338" width="802" height="280" rx="17" class="network"/>
+    <text x="520" y="370" class="label">Docker Compose · red privada de contenedores</text>
+
+    <rect x="542" y="404" width="342" height="169" rx="15" fill="#eaf4ff" stroke="#8bb7df" stroke-width="1.5"/>
+    <rect x="563" y="424" width="53" height="43" rx="9" fill="#2675b9"/>
+    <path d="M576 437h27v17h-27zM580 433h19M580 458h19" fill="none" stroke="#fff" stroke-width="2"/>
+    <text x="632" y="445" class="heading">Odoo 19</text>
+    <text x="632" y="467" class="small">Aplicación web · ERP · e-commerce</text>
+    <line x1="566" y1="489" x2="858" y2="489" stroke="#c8dced"/>
+    <text x="566" y="516" class="body">Puerto publicado: EC2:8069 → contenedor:8069</text>
+    <text x="566" y="540" class="body">Montaje local: ./addons → /mnt/extra-addons</text>
+    <text x="566" y="561" class="tiny">Datos persistentes: volumen odoo_data</text>
+
+    <rect x="968" y="404" width="286" height="169" rx="15" fill="#edf8f1" stroke="#94c7a8" stroke-width="1.5"/>
+    <ellipse cx="1009" cy="440" rx="23" ry="9" fill="#24835d"/>
+    <path d="M986 440v30c0 5 10 9 23 9s23-4 23-9v-30M986 455c0 5 10 9 23 9s23-4 23-9" fill="none" stroke="#24835d" stroke-width="2"/>
+    <text x="1044" y="445" class="heading">PostgreSQL 15</text>
+    <text x="993" y="503" class="body">Servicio: db · usuario: odoo</text>
+    <text x="993" y="527" class="body">Sin puerto público publicado</text>
+    <text x="993" y="551" class="tiny">Datos persistentes: volumen postgres_data</text>
+
+    <path d="M884 482h74" class="greenLine"/>
+    <text x="887" y="466" class="tiny">HOST=db</text>
+    <text x="887" y="512" class="tiny">red interna</text>
+
+    <rect x="541" y="581" width="714" height="24" rx="8" fill="#fff" opacity=".94"/>
+    <text x="554" y="598" class="tiny">Los volúmenes con nombre conservan datos al reiniciar o detener los contenedores.</text>
+  </g>
+
+  <path d="M313 323H379V468H535" class="blueLine"/>
+  <rect x="324" y="344" width="131" height="27" rx="13" fill="#e6f2fc"/>
+  <text x="339" y="362" class="tiny">Navegador · :8069</text>
+
+  <path d="M313 462H355V687H823V637" class="orangeLine"/>
+  <rect x="372" y="660" width="159" height="25" rx="12" fill="#fff3df"/>
+  <text x="387" y="677" class="tiny">SSH · terminal móvil</text>
+
+  <g>
+    <rect x="64" y="753" width="1310" height="93" rx="18" fill="#fff" stroke="#d7e2ed"/>
+    <text x="92" y="785" class="label">Flujo de trabajo</text>
+    <circle cx="263" cy="811" r="7" fill="#db8518"/>
+    <text x="280" y="816" class="body">Conectar al Ubuntu por SSH desde el celular</text>
+    <circle cx="672" cy="811" r="7" fill="#2675b9"/>
+    <text x="689" y="816" class="body">Desplegar Odoo y PostgreSQL con Compose</text>
+    <circle cx="1083" cy="811" r="7" fill="#24835d"/>
+    <text x="1100" y="816" class="body">Abrir y probar Odoo en el móvil</text>
+  </g>
+</svg>
