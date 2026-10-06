@@ -1,8 +1,67 @@
-# Auditoría interna de hardening Linux y AWS
+# Construyendo mi laboratorio de Cloud Security en AWS | Auditoría y Hardening
 
-Este proyecto es un auditor de **solo lectura** para un servidor Ubuntu/Debian y su cuenta AWS. Recopila evidencia técnica de hardening, bitácoras y configuración de seguridad en el host local, revisa todos los buckets S3 visibles de la cuenta y examina servicios regionales únicamente en la región elegida. Cada ejecución crea un informe JSON y un respaldo verificable.
+En este proyecto desarrollo y demuestro un auditor de **solo lectura** para
+servidores Ubuntu/Debian y entornos AWS. La herramienta recopila evidencia
+técnica de hardening del sistema Linux y de configuración de seguridad de AWS
+para ayudar a identificar controles que requieren revisión.
 
-No es un escáner de vulnerabilidades CVE, no intenta explotar servicios, no instala software, no cambia configuración, no crea recursos AWS y no elimina servidores.
+El alcance incluye el estado del sistema, usuarios y permisos, configuración
+seleccionada de SSH, firewall y servicios en escucha; además inventaría recursos
+de AWS en una región elegida, revisa la configuración de buckets S3 visibles para
+la cuenta y genera informes JSON con respaldo verificable. Las comprobaciones
+concretas y sus limitaciones se detallan más abajo.
+
+> **Importante:** es una herramienta educativa de auditoría, no una certificación
+> de seguridad ni un escáner CVE. No intenta explotar servicios, instalar
+> software, cambiar configuraciones del sistema o de AWS, crear recursos ni
+> eliminar servidores.
+
+## Video del proyecto
+
+El video muestra la construcción y el recorrido del laboratorio:
+
+<p align="center">
+  <a href="https://youtube.com/shorts/OYOv5CxavpM?feature=share">
+    <img src="https://img.youtube.com/vi/OYOv5CxavpM/hqdefault.jpg" alt="Ver en YouTube: Construyendo mi laboratorio de Cloud Security en AWS | Auditoría y Hardening" width="480">
+  </a>
+</p>
+
+<p align="center"><a href="https://youtube.com/shorts/OYOv5CxavpM?feature=share"><strong>▶ Ver “Construyendo mi laboratorio de Cloud Security en AWS | Auditoría y Hardening”</strong></a></p>
+
+## ¿Qué hace el laboratorio?
+
+El auditor combina dos alcances de lectura en una ejecución:
+
+| Alcance | Información revisada |
+| --- | --- |
+| Servidor Ubuntu/Debian local | Distribución y kernel, simulación de actualizaciones según la caché de APT, cuentas con shell interactivo y UID 0, miembros directos de `sudo`, firewall, sockets en escucha, configuración seleccionada de SSH, permisos de `/etc/shadow` y `authorized_keys`, estado de `auditd`/`fail2ban`/SSM Agent, sincronización horaria, resumen de journald y filesystem raíz. |
+| Cuenta AWS | Identidad y cuenta; VPC, subredes, rutas, NACL e instancias EC2; instance profile, IMDSv2, EBS cifrado y reglas de Security Groups; resúmenes seleccionados de IAM; CloudTrail, alarmas y retención de CloudWatch Logs, Config, GuardDuty, Security Hub y RDS. |
+| Buckets S3 visibles | Región, bloqueo de acceso público, estado de políticas, cifrado, versionado y registro de acceso de cada bucket que la identidad puede consultar. S3 se enumera a nivel de cuenta; no se recorren automáticamente todas las regiones. |
+| Evidencia | Hallazgos y resumen de inventario en JSON, bitácora de ejecución, respaldo `tar.gz` y archivo `SHA256SUMS` para comprobar integridad. Los archivos se guardan localmente con permisos restrictivos. |
+
+### Cómo funciona, paso a paso
+
+1. **Identifica el alcance.** La auditoría local inspecciona el host donde se
+   ejecuta el script. Las consultas AWS usan la identidad disponible para AWS
+   CLI en ese mismo entorno. `AWS_REGION` selecciona la región para servicios
+   regionales y el inventario de S3 cubre los buckets visibles de la cuenta.
+2. **Comprueba el host Linux.** Ejecuta comprobaciones defensivas sobre
+   configuración y estado del sistema. Los datos de journald se resumen; no se
+   copian líneas de logs al informe.
+3. **Consulta AWS en modo lectura.** Usa AWS CLI v2 y las acciones declaradas en
+   la [política IAM de referencia](docs/iam-read-only-policy.json). Si falta un
+   permiso o una API no puede consultarse, el control queda sin verificar; un
+   error no equivale a un resultado seguro.
+4. **Relaciona y presenta evidencia.** Imprime controles con estado, severidad,
+   evidencia y recomendación, y conserva inventario resumido que permite
+   relacionar instancias, redes, perfiles y reglas.
+5. **Guarda resultados verificables.** Crea un directorio privado por ejecución
+   con `report.json`, `audit.log`, `bundle.tar.gz` y `SHA256SUMS`. El auditor no
+   sube los reportes a AWS.
+
+La arquitectura siguiente muestra la ejecución del auditor y el flujo opcional
+de Kiro por SSH/MCP. El segundo diagrama explica la secuencia y la separación
+entre la identidad SSH y la identidad AWS:
 
 ![Diagrama SVG: agente Kiro, conexión SSH/MCP, auditoría de solo lectura y servicios AWS](docs/kiro-aws-audit-flow.svg)
 
@@ -394,7 +453,7 @@ Las pruebas Bash requieren `jq`; la prueba de color también requiere `script` d
 
 ```text
 cloud_security_lab/
-├── README.md
+├── readme.md
 ├── .env.example
 ├── .kiro/
 │   └── agents/
