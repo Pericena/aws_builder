@@ -1,0 +1,4 @@
+reports/
+*.pem
+.env
+cloud_security_lab/.env

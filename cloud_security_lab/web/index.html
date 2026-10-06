@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Auditor AWS · Reporte</title>
+  <style>
+    :root {
+      --ink: #142b45;
+      --muted: #687b90;
+      --line: #e3eaf2;
+      --paper: #ffffff;
+      --canvas: #f2f6fb;
+      --navy: #102a43;
+      --blue: #2775b8;
+      --green: #16835d;
+      --amber: #b66a09;
+      --red: #bd3340;
+      --shadow: 0 14px 38px rgba(22, 43, 68, .08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 85% -10%, rgba(72, 147, 208, .13), transparent 32rem),
+        var(--canvas);
+      font: 15px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    button, input, select { font: inherit; }
+    .shell { max-width: 1280px; margin: 0 auto; padding: 28px 30px 60px; }
+    header {
+      display: flex; align-items: center; justify-content: space-between; gap: 20px;
+      padding: 8px 0 25px;
+    }
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .brand-mark {
+      display: grid; place-items: center; width: 48px; height: 48px; border-radius: 15px;
+      color: white; background: linear-gradient(145deg, #347fbd, #155083);
+      box-shadow: 0 8px 18px rgba(39, 117, 184, .24);
+    }
+    .brand-mark svg { width: 27px; height: 27px; }
+    h1 { margin: 0; font-size: clamp(23px, 3vw, 31px); line-height: 1.15; letter-spacing: -.04em; }
+    .subtitle { margin: 5px 0 0; color: var(--muted); font-size: 14px; }
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+    .secure-pill, .button {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      min-height: 42px; border-radius: 12px; padding: 0 14px; font-weight: 650;
+    }
+    .secure-pill { color: #176443; background: #e6f5ed; border: 1px solid #c9e9d7; font-size: 13px; }
+    .secure-pill svg { width: 16px; height: 16px; }
+    .button { color: #fff; background: var(--navy); border: 0; cursor: pointer; box-shadow: 0 5px 13px #102a4323; }
+    .button:hover { background: #1a4164; }
+    .button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid #8dc5ef; outline-offset: 2px; }
+    .banner {
+      display: flex; gap: 12px; align-items: flex-start; margin: 0 0 20px; padding: 13px 16px;
+      color: #70470e; background: #fff8e9; border: 1px solid #f0d9a6; border-radius: 14px;
+    }
+    .banner svg { width: 20px; height: 20px; flex: none; margin-top: 1px; }
+    .banner strong { display: block; margin-bottom: 2px; color: #65420f; }
+    .banner p { margin: 0; font-size: 13px; }
+    .meta-card, .panel, .stat {
+      background: var(--paper); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow);
+    }
+    .meta-card { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 12px; padding: 19px 22px; margin-bottom: 17px; }
+    .meta-item { min-width: 0; }
+    .meta-label { display: block; color: var(--muted); font-size: 11px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
+    .meta-value { display: block; margin-top: 5px; overflow: hidden; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+    .stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 13px; margin-bottom: 19px; }
+    .stat { position: relative; overflow: hidden; padding: 17px 18px; }
+    .stat::after { position: absolute; content: ""; width: 65px; height: 65px; right: -25px; top: -25px; border-radius: 50%; background: var(--wash); }
+    .stat-label { color: var(--muted); font-size: 12px; font-weight: 700; }
+    .stat-number { display: block; margin-top: 6px; font-size: 29px; line-height: 1; font-weight: 760; letter-spacing: -.04em; color: var(--tone); }
+    .stat.total { --tone: #254869; --wash: #e7f0f8; }
+    .stat.pass { --tone: var(--green); --wash: #e4f5eb; }
+    .stat.warn { --tone: var(--amber); --wash: #fff1d9; }
+    .stat.fail { --tone: var(--red); --wash: #fce8e9; }
+    .stat.error { --tone: #65758a; --wash: #edf1f5; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(300px, .8fr); gap: 17px; align-items: start; }
+    .panel { overflow: hidden; }
+    .panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; padding: 20px 22px 15px; }
+    h2 { margin: 0; font-size: 18px; letter-spacing: -.02em; }
+    .panel-desc { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+    .filters { display: flex; gap: 8px; padding: 0 22px 16px; }
+    .filters input, .filters select {
+      width: 100%; min-width: 0; height: 40px; padding: 0 11px;
+      color: var(--ink); background: #fbfcfe; border: 1px solid var(--line); border-radius: 10px;
+    }
+    .filters input { flex: 1.4; }
+    .filters select { flex: .8; }
+    .table-wrap { overflow: auto; border-top: 1px solid var(--line); }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { padding: 11px 14px; color: #6c7f93; background: #f8fafc; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+    td { padding: 13px 14px; border-top: 1px solid #edf1f5; vertical-align: top; }
+    tbody tr:hover { background: #f9fbfe; }
+    .control { min-width: 140px; font-weight: 700; font-size: 12px; }
+    .resource { display: block; max-width: 195px; margin-top: 4px; overflow-wrap: anywhere; color: var(--muted); font-size: 11px; font-weight: 450; }
+    .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; border-radius: 999px; font-size: 10px; font-weight: 800; letter-spacing: .035em; white-space: nowrap; }
+    .badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .status-PASS { color: #16754f; background: #e4f5eb; }
+    .status-INFO { color: #315d86; background: #eaf2fa; }
+    .status-WARN { color: #9c5a08; background: #fff1d9; }
+    .status-FAIL { color: #b22e3b; background: #fde8e9; }
+    .status-ERROR { color: #596c80; background: #edf1f5; }
+    .severity { color: #596c80; font-size: 10px; font-weight: 750; }
+    .severity-CRITICAL { color: #a51d2b; }
+    .severity-HIGH { color: #c0392b; }
+    .severity-MEDIUM { color: #9a5a09; }
+    .details { display: grid; gap: 8px; min-width: 230px; max-width: 440px; }
+    .detail-block { color: #40566e; font-size: 12px; overflow-wrap: anywhere; }
+    .detail-block strong { display: block; margin-bottom: 2px; color: #7a8b9c; font-size: 10px; letter-spacing: .07em; text-transform: uppercase; }
+    .inventory pre {
+      max-height: 590px; overflow: auto; margin: 0; padding: 19px 21px;
+      color: #dcecff; background: #142b45; font: 11px/1.55 ui-monospace, SFMono-Regular, Consolas, monospace;
+      white-space: pre-wrap; overflow-wrap: anywhere;
+    }
+    .inventory-foot { padding: 12px 18px; color: var(--muted); font-size: 11px; }
+    .empty { padding: 34px 22px; text-align: center; color: var(--muted); }
+    .empty svg { width: 45px; height: 45px; color: #7f9db8; }
+    .empty strong { display: block; margin: 8px 0 3px; color: var(--ink); }
+    .footer { padding: 19px 5px 0; color: #77899b; font-size: 11px; text-align: center; }
+    .toast { position: fixed; left: 50%; bottom: 20px; transform: translate(-50%, 20px); padding: 10px 15px; color: #fff; background: #243b53; border-radius: 10px; opacity: 0; transition: .2s ease; pointer-events: none; }
+    .toast.show { transform: translate(-50%, 0); opacity: 1; }
+    @media (max-width: 950px) {
+      .layout { grid-template-columns: 1fr; }
+      .meta-card { grid-template-columns: repeat(2, 1fr); }
+      .stats { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 620px) {
+      .shell { padding: 18px 13px 35px; }
+      header { align-items: flex-start; }
+      .header-actions { flex-direction: column-reverse; align-items: flex-end; }
+      .secure-pill { min-height: 32px; padding: 0 9px; font-size: 11px; }
+      .secure-pill span { display: none; }
+      .button { min-height: 38px; padding: 0 10px; font-size: 12px; }
+      .meta-card { gap: 14px; padding: 16px; }
+      .stats { grid-template-columns: repeat(2, 1fr); gap: 9px; }
+      .stat { padding: 14px; }
+      .stat-number { font-size: 25px; }
+      .panel-head { padding: 17px 15px 13px; }
+      .filters { padding: 0 15px 13px; }
+      th, td { padding: 11px 10px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none"><path d="M16 3 27 7v8c0 7-4.7 11-11 14C9.7 26 5 22 5 15V7l11-4Z" stroke="currentColor" stroke-width="2.4"/><path d="m11 16 3.2 3.2L21 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div>
+          <h1>Auditoría de seguridad</h1>
+          <p class="subtitle">Ubuntu + AWS · reporte de solo lectura</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="secure-pill" title="Visor local, accesible mediante túnel SSH">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="4" y="8" width="12" height="9" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M6.5 8V5.8a3.5 3.5 0 0 1 7 0V8" stroke="currentColor" stroke-width="1.6"/></svg>
+          <span>Solo localhost · túnel SSH</span>
+        </div>
+        <button class="button" id="refresh" type="button">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M16.5 8A6.8 6.8 0 0 0 4.1 5.2L2.5 7M2.5 7V3.7M2.5 7h3.3M3.5 12a6.8 6.8 0 0 0 12.4 2.8l1.6-1.8m0 0v3.3m0-3.3h-3.3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Actualizar
+        </button>
+      </div>
+    </header>
+
+    <section class="banner" role="note">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 22 20H2L12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 9v5m0 3h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <div>
+        <strong>Reporte interno sensible</strong>
+        <p>Esta página muestra inventario y hallazgos de AWS/Ubuntu. El servidor escucha solo en 127.0.0.1; accede desde tu PC con un túnel SSH. No abras el puerto 5000 en el Security Group.</p>
+      </div>
+    </section>
+
+    <div id="content" hidden>
+      <section class="meta-card" aria-label="Alcance del reporte">
+        <div class="meta-item"><span class="meta-label">Servidor</span><span class="meta-value" id="host">—</span></div>
+        <div class="meta-item"><span class="meta-label">Cuenta AWS</span><span class="meta-value" id="account">—</span></div>
+        <div class="meta-item"><span class="meta-label">Región</span><span class="meta-value" id="region">—</span></div>
+        <div class="meta-item"><span class="meta-label">Generado UTC</span><span class="meta-value" id="generated">—</span></div>
+      </section>
+
+      <section class="stats" aria-label="Resumen de controles">
+        <article class="stat total"><span class="stat-label">Controles</span><strong class="stat-number" id="count-total">0</strong></article>
+        <article class="stat pass"><span class="stat-label">Correctos</span><strong class="stat-number" id="count-pass">0</strong></article>
+        <article class="stat warn"><span class="stat-label">Advertencias</span><strong class="stat-number" id="count-warn">0</strong></article>
+        <article class="stat fail"><span class="stat-label">Fallos</span><strong class="stat-number" id="count-fail">0</strong></article>
+        <article class="stat error"><span class="stat-label">Sin verificar</span><strong class="stat-number" id="count-error">0</strong></article>
+      </section>
+
+      <div class="layout">
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Controles y hallazgos</h2>
+              <p class="panel-desc" id="report-file">Filtra por estado o busca un control.</p>
+            </div>
+          </div>
+          <div class="filters">
+            <input id="search" type="search" placeholder="Buscar control, recurso o evidencia…" aria-label="Buscar controles">
+            <select id="status-filter" aria-label="Filtrar por estado">
+              <option value="">Todos los estados</option>
+              <option value="FAIL">FAIL</option><option value="WARN">WARN</option>
+              <option value="ERROR">ERROR / sin verificar</option><option value="PASS">PASS</option><option value="INFO">INFO</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Estado</th><th>Control / recurso</th><th>Severidad</th><th>Evidencia / recomendación</th></tr></thead>
+              <tbody id="checks"></tbody>
+            </table>
+            <div class="empty" id="no-results" hidden>
+              <strong>No hay controles que coincidan</strong>
+              <span>Prueba otro filtro o término de búsqueda.</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel inventory">
+          <div class="panel-head">
+            <div>
+              <h2>Inventario técnico</h2>
+              <p class="panel-desc">Datos observados para correlación; no implica reachability.</p>
+            </div>
+          </div>
+          <pre id="inventory">{}</pre>
+          <div class="inventory-foot">Los valores se presentan como texto seguro; no se ejecutan ni interpretan como HTML.</div>
+        </section>
+      </div>
+    </div>
+
+    <section class="panel empty" id="empty" hidden>
+      <svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M10 8h20l9 9v23H10z" stroke="currentColor" stroke-width="2"/><path d="M30 8v10h9M16 26h17M16 32h17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <strong>No se encontró un reporte todavía</strong>
+      <span>Ejecuta <code>bash scripts/audit.sh</code> en la EC2 y pulsa Actualizar.</span>
+    </section>
+    <section class="panel empty" id="loading">Cargando el último reporte…</section>
+    <div class="footer">Auditor AWS de solo lectura · vista web local · los cambios no se aplican desde esta página</div>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script>
+    "use strict";
+    let reportChecks = [];
+    const byId = (id) => document.getElementById(id);
+    const text = (value, fallback = "—") => value === null || value === undefined || value === "" ? fallback : String(value);
+    const countStatus = (status) => reportChecks.filter((check) => check.status === status).length;
+
+    function appendCell(row, value, className) {
+      const cell = document.createElement("td");
+      if (className) cell.className = className;
+      cell.textContent = text(value);
+      row.appendChild(cell);
+      return cell;
+    }
+
+    function makeDetail(label, value) {
+      const block = document.createElement("div");
+      block.className = "detail-block";
+      const title = document.createElement("strong");
+      title.textContent = label;
+      const body = document.createElement("span");
+      body.textContent = text(value, "No aplica");
+      block.append(title, body);
+      return block;
+    }
+
+    function renderChecks() {
+      const query = byId("search").value.trim().toLocaleLowerCase();
+      const status = byId("status-filter").value;
+      const body = byId("checks");
+      body.replaceChildren();
+      let visible = 0;
+      for (const check of reportChecks) {
+        const haystack = [check.control, check.resource, check.scope, check.evidence, check.recommendation, check.severity, check.status].join(" ").toLocaleLowerCase();
+        if ((status && check.status !== status) || (query && !haystack.includes(query))) continue;
+        const row = document.createElement("tr");
+        const statusCell = document.createElement("td");
+        const badge = document.createElement("span");
+        badge.className = `badge status-${text(check.status, "INFO")}`;
+        badge.textContent = text(check.status, "INFO");
+        statusCell.appendChild(badge);
+        row.appendChild(statusCell);
+
+        const controlCell = document.createElement("td");
+        const controlName = document.createElement("span");
+        controlName.className = "control";
+        controlName.textContent = text(check.control);
+        const resource = document.createElement("span");
+        resource.className = "resource";
+        resource.textContent = `${text(check.scope, "—")} · ${text(check.resource, "—")}`;
+        controlCell.append(controlName, resource);
+        row.appendChild(controlCell);
+
+        const severity = document.createElement("td");
+        severity.className = `severity severity-${text(check.severity, "INFO")}`;
+        severity.textContent = text(check.severity, "INFO");
+        row.appendChild(severity);
+
+        const detail = document.createElement("td");
+        const detailStack = document.createElement("div");
+        detailStack.className = "details";
+        detailStack.append(makeDetail("Evidencia", check.evidence), makeDetail("Recomendación", check.recommendation));
+        detail.appendChild(detailStack);
+        row.appendChild(detail);
+        body.appendChild(row);
+        visible += 1;
+      }
+      byId("no-results").hidden = visible !== 0;
+    }
+
+    function renderReport(report) {
+      byId("loading").hidden = true;
+      byId("empty").hidden = true;
+      byId("content").hidden = false;
+      const scope = report.scope || {};
+      byId("host").textContent = text(scope.host);
+      byId("account").textContent = scope.aws_account_id_suffix ? `•••• ${scope.aws_account_id_suffix}` : "No consultada";
+      byId("region").textContent = text(scope.aws_region, "AWS omitido");
+      byId("generated").textContent = text(report.generated_at_utc);
+      byId("report-file").textContent = `${text(report.report_file)} · ejecución ${text(report.run_id)}`;
+      reportChecks = Array.isArray(report.checks) ? report.checks : [];
+      byId("count-total").textContent = reportChecks.length;
+      byId("count-pass").textContent = countStatus("PASS");
+      byId("count-warn").textContent = countStatus("WARN");
+      byId("count-fail").textContent = countStatus("FAIL");
+      byId("count-error").textContent = countStatus("ERROR");
+      byId("inventory").textContent = JSON.stringify(report.inventory || {}, null, 2);
+      renderChecks();
+    }
+
+    async function loadReport() {
+      byId("refresh").disabled = true;
+      try {
+        const response = await fetch("/api/latest", { cache: "no-store", headers: { Accept: "application/json" } });
+        if (response.status === 404) {
+          byId("loading").hidden = true;
+          byId("content").hidden = true;
+          byId("empty").hidden = false;
+          return;
+        }
+        if (!response.ok) throw new Error("El servicio no pudo leer el reporte.");
+        renderReport(await response.json());
+      } catch (error) {
+        byId("loading").hidden = false;
+        byId("loading").textContent = error.message || "Error al cargar el reporte.";
+        byId("toast").textContent = error.message || "Error al cargar el reporte.";
+        byId("toast").classList.add("show");
+        window.setTimeout(() => byId("toast").classList.remove("show"), 3500);
+      } finally {
+        byId("refresh").disabled = false;
+      }
+    }
+
+    byId("refresh").addEventListener("click", loadReport);
+    byId("search").addEventListener("input", renderChecks);
+    byId("status-filter").addEventListener("change", renderChecks);
+    loadReport();
+  </script>
+</body>
+</html>

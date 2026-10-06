@@ -1,0 +1,155 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1020" viewBox="0 0 1500 1020" role="img" aria-labelledby="title desc">
+  <title id="title">Secuencia paso a paso de la auditoría AWS desde Kiro</title>
+  <desc id="desc">Diagrama de secuencia con carriles para operador y Kiro, SSH local, MCP en Ubuntu EC2, auditor Bash, AWS CLI e identidad IAM, servicios AWS y evidencia. Muestra solicitud, autenticación SSH, identidad AWS separada, revisión, persistencia local y devolución del informe; no hay remediación.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f8fbff"/><stop offset="1" stop-color="#edf3fa"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#193452" flood-opacity=".1"/>
+    </filter>
+    <marker id="blue" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto"><path d="M1 1 10 5.5 1 10Z" fill="#2877b9"/></marker>
+    <marker id="orange" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto"><path d="M1 1 10 5.5 1 10Z" fill="#e8911e"/></marker>
+    <marker id="green" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto"><path d="M1 1 10 5.5 1 10Z" fill="#29835c"/></marker>
+    <style>
+      text{font-family:Arial,Helvetica,sans-serif;fill:#172e48}
+      .title{font-size:31px;font-weight:700}.subtitle{font-size:16px;fill:#536a82}
+      .lane{font-size:14px;font-weight:700}.head{font-size:15px;font-weight:700}
+      .body{font-size:13px;fill:#40566e}.small{font-size:11px;fill:#50667e}
+      .tiny{font-size:10px;fill:#5d7186}.white{fill:#fff}
+      .panel{fill:#fff;stroke:#d4dfeb;stroke-width:1.3}
+      .blueLine{stroke:#2877b9;stroke-width:3;fill:none;marker-end:url(#blue)}
+      .orangeLine{stroke:#e8911e;stroke-width:3;fill:none;marker-end:url(#orange)}
+      .greenLine{stroke:#29835c;stroke-width:3;fill:none;marker-end:url(#green)}
+      .dash{stroke:#bccbda;stroke-width:1.5;stroke-dasharray:5 6}
+    </style>
+    <symbol id="laptop" viewBox="0 0 64 56">
+      <rect x="10" y="5" width="44" height="34" rx="4" fill="none" stroke="currentColor" stroke-width="3.5"/>
+      <path d="M4 46h56l-5 6H9z" fill="currentColor"/><path d="M19 15h26M19 22h20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="server" viewBox="0 0 64 56">
+      <rect x="7" y="5" width="50" height="19" rx="4" fill="none" stroke="currentColor" stroke-width="3.5"/>
+      <rect x="7" y="32" width="50" height="19" rx="4" fill="none" stroke="currentColor" stroke-width="3.5"/>
+      <circle cx="16" cy="14" r="2" fill="currentColor"/><circle cx="16" cy="41" r="2" fill="currentColor"/>
+      <path d="M25 14h22M25 41h22" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="shield" viewBox="0 0 56 62">
+      <path d="M28 4 49 12v16c0 14-9 23-21 30C16 51 7 42 7 28V12Z" fill="none" stroke="currentColor" stroke-width="3.5"/>
+      <path d="m18 30 7 7 14-16" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="cloud" viewBox="0 0 72 54">
+      <path d="M18 45h40a12 12 0 0 0 1-24 18 18 0 0 0-34-5A14 14 0 0 0 18 45Z" fill="none" stroke="currentColor" stroke-width="3.5"/>
+      <path d="M27 34h20M38 27l9 7-9 7" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="doc" viewBox="0 0 50 58">
+      <path d="M8 4h23l12 12v38H8Z" fill="none" stroke="currentColor" stroke-width="3"/>
+      <path d="M31 4v13h12M15 27h21M15 34h21M15 41h15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+  <rect width="1500" height="980" fill="url(#bg)"/>
+  <text class="title" x="48" y="54">Qué ocurre cuando pides una auditoría a Kiro</text>
+  <text class="subtitle" x="50" y="82">Secuencia real del flujo MCP remoto · quién autentica cada salto · dónde se genera y procesa el informe</text>
+
+  <g filter="url(#shadow)">
+    <rect class="panel" x="45" y="111" width="1410" height="105" rx="18"/>
+  </g>
+  <text class="lane" x="72" y="140">CARRILES / COMPONENTES</text>
+  <g>
+    <rect x="70" y="154" width="184" height="45" rx="11" fill="#e2effb"/>
+    <rect x="274" y="154" width="184" height="45" rx="11" fill="#e2effb"/>
+    <rect x="478" y="154" width="184" height="45" rx="11" fill="#e9e3f5"/>
+    <rect x="682" y="154" width="184" height="45" rx="11" fill="#eaf5ed"/>
+    <rect x="886" y="154" width="184" height="45" rx="11" fill="#fff0d7"/>
+    <rect x="1090" y="154" width="160" height="45" rx="11" fill="#f1eafb"/>
+    <rect x="1270" y="154" width="158" height="45" rx="11" fill="#e7f4ec"/>
+    <text class="lane" x="100" y="182">Operador</text>
+    <text class="lane" x="308" y="182">Kiro en Windows</text>
+    <text class="lane" x="506" y="182">SSH local</text>
+    <text class="lane" x="700" y="182">MCP en Ubuntu EC2</text>
+    <text class="lane" x="921" y="182">Auditor + AWS CLI</text>
+    <text class="lane" x="1114" y="182">Servicios AWS</text>
+    <text class="lane" x="1294" y="182">reportes/</text>
+  </g>
+
+  <g>
+    <line class="dash" x1="162" y1="230" x2="162" y2="826"/>
+    <line class="dash" x1="366" y1="230" x2="366" y2="826"/>
+    <line class="dash" x1="570" y1="230" x2="570" y2="826"/>
+    <line class="dash" x1="774" y1="230" x2="774" y2="826"/>
+    <line class="dash" x1="978" y1="230" x2="978" y2="826"/>
+    <line class="dash" x1="1170" y1="230" x2="1170" y2="826"/>
+    <line class="dash" x1="1349" y1="230" x2="1349" y2="826"/>
+  </g>
+
+  <g>
+    <circle cx="162" cy="264" r="18" fill="#2877b9"/><text class="white head" x="157" y="270">1</text>
+    <text class="head" x="194" y="269">Solicitud</text>
+    <path class="blueLine" d="M181 302H350"/>
+    <text class="body" x="204" y="294">“Audita mi EC2”</text>
+    <rect x="319" y="313" width="94" height="47" rx="10" fill="#eef6fd" stroke="#a9c8e2"/>
+    <use href="#laptop" x="342" y="318" width="46" height="40" style="color:#2877b9"/>
+    <text class="small" x="258" y="381">Kiro interpreta la petición y prepara la llamada</text>
+  </g>
+
+  <g>
+    <circle cx="570" cy="416" r="18" fill="#2877b9"/><text class="white head" x="565" y="422">2</text>
+    <text class="head" x="602" y="421">Conexión segura al proceso MCP</text>
+    <path class="blueLine" d="M366 453H755"/>
+    <text class="body" x="431" y="444">ssh -T aws-auditor-ec2 · clave privada queda en la PC</text>
+    <rect x="692" y="465" width="164" height="52" rx="12" fill="#f2edfa" stroke="#c9b8e1"/>
+    <use href="#cloud" x="706" y="476" width="48" height="33" style="color:#7355a5"/>
+    <text class="small" x="758" y="486">MCP stdio</text>
+    <text class="tiny" x="758" y="504">JSON-RPC</text>
+    <text class="small" x="400" y="536">Kiro inicia ssh; ssh ejecuta mcp-server.sh en la EC2 sin terminal interactiva.</text>
+  </g>
+
+  <g>
+    <circle cx="774" cy="573" r="18" fill="#e8911e"/><text class="white head" x="769" y="579">3</text>
+    <text class="head" x="806" y="578">Llamada a la herramienta única</text>
+    <path class="blueLine" d="M774 610H962"/>
+    <text class="body" x="795" y="602">tools/call: aws_security_audit</text>
+    <rect x="694" y="624" width="161" height="51" rx="12" fill="#eef7f0" stroke="#b7d8c0"/>
+    <use href="#shield" x="703" y="629" width="31" height="39" style="color:#29835c"/>
+    <text class="small" x="741" y="646">Bash auditor</text>
+    <text class="tiny" x="741" y="663">host local + AWS</text>
+    <rect x="899" y="624" width="158" height="51" rx="12" fill="#fff5e4" stroke="#edce9c"/>
+    <use href="#cloud" x="906" y="634" width="41" height="31" style="color:#d98716"/>
+    <text class="small" x="951" y="646">AWS CLI v2</text>
+    <text class="tiny" x="951" y="663">llamadas Describe/Get/List</text>
+    <path class="orangeLine" d="M1057 650H1150"/>
+    <text class="small" x="1062" y="640">lectura API</text>
+    <rect x="1097" y="688" width="146" height="44" rx="11" fill="#fff8ec" stroke="#e8c993"/>
+    <use href="#cloud" x="1104" y="695" width="39" height="30" style="color:#d98716"/>
+    <text class="small" x="1146" y="707">AWS regional</text>
+    <text class="tiny" x="1146" y="722">+ S3 cuenta</text>
+    <path class="orangeLine" d="M978 675V704H1087"/>
+    <text class="tiny" x="878" y="700">Rol temporal</text>
+    <text class="tiny" x="878" y="714">instance profile</text>
+    <text class="small" x="690" y="751">IAM role EC2 autentica las lecturas. SSH no concede permisos AWS; Kiro tampoco.</text>
+  </g>
+
+  <g>
+    <circle cx="1349" cy="573" r="18" fill="#29835c"/><text class="white head" x="1344" y="579">4</text>
+    <text class="head" x="1380" y="578">Evidencia</text>
+    <path class="greenLine" d="M978 778H1333"/>
+    <rect x="1281" y="793" width="135" height="51" rx="10" fill="#eaf6ee" stroke="#a7d0b5"/>
+    <use href="#doc" x="1288" y="798" width="31" height="40" style="color:#29835c"/>
+    <text class="small" x="1323" y="812">JSON + log</text>
+    <text class="tiny" x="1323" y="829">bundle + SHA256</text>
+    <path class="greenLine" d="M1349 793C1349 746 774 746 774 685"/>
+    <text class="small" x="1093" y="769">Se guarda en EC2 con permisos privados</text>
+    <path class="greenLine" d="M774 624C774 558 366 558 366 487"/>
+    <text class="body" x="404" y="565">MCP devuelve el reporte completo a Kiro</text>
+    <text class="small" x="398" y="585">El modelo interpreta hallazgos y recomendaciones</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="54" y="870" width="1392" height="118" rx="16" fill="#fff8ed" stroke="#e8c58d" stroke-width="1.4"/>
+  </g>
+  <text class="head" x="78" y="901">Fronteras que conviene recordar</text>
+  <text class="body" x="78" y="928">Clave SSH = inicio de sesión Linux</text>
+  <text class="body" x="423" y="928">IAM instance profile = autorización AWS</text>
+  <text class="body" x="855" y="928">Kiro/modelo = analiza el reporte que recibe</text>
+  <text class="body" x="78" y="956">Web privado: EC2 ejecuta report-web.py en 127.0.0.1:5000 · PC: ssh -N -L 5000:127.0.0.1:5000 aws-auditor-ec2 · abrir http://127.0.0.1:5000</text>
+  <text class="small" x="78" y="978">No abras el puerto 5000 en el Security Group. El informe contiene inventario sensible. No hay remediación automática; ERROR significa sin verificar.</text>
+</svg>
