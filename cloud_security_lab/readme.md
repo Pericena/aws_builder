@@ -200,7 +200,7 @@ Después de ejecutar el auditor en la EC2, inicia el visor usando Python 3.10+ (
 
 ```bash
 cd ~/cloud_security_lab
-python3 scripts/report-web.py --port 5000
+python3 scripts/report-web.py --host 127.0.0.1 --port 5000
 ```
 
 El visor enlaza **solo `127.0.0.1` en la EC2**. Déjalo activo en esa terminal. Desde otra ventana de PowerShell en tu PC, abre el túnel SSH:
@@ -212,6 +212,117 @@ ssh -N -L 5000:127.0.0.1:5000 aws-auditor-ec2
 Mantén esa sesión abierta y navega en la PC a <http://127.0.0.1:5000>. Pulsa **Actualizar** para cargar el último informe. El visor presenta resumen de controles, filtros por estado/búsqueda, evidencia, recomendaciones e inventario. Detén el visor con `Ctrl+C` en la EC2 y el túnel con `Ctrl+C` en PowerShell.
 
 No abras el puerto 5000 al público ni añadas una regla `0.0.0.0/0` al Security Group: el informe contiene datos internos y el visor no tiene login propio; el túnel SSH mantiene el acceso bajo la autenticación SSH existente. Si el puerto local 5000 ya está ocupado, cambia el lado local del túnel, por ejemplo `ssh -N -L 5001:127.0.0.1:5000 aws-auditor-ec2`, y abre <http://127.0.0.1:5001>.
+
+### Prueba temporal de acceso desde Internet por el puerto 3000
+
+Durante la prueba intenté abrir el visor desde el navegador del celular usando el
+puerto TCP `3000`. Esto requiere dos cosas distintas: que el proceso escuche en
+una interfaz alcanzable desde la red y que el Security Group permita el tráfico.
+Abrir solo el puerto en AWS no cambia dónde escucha el proceso. El visor permite
+elegir la interfaz (`--host`) y el puerto (`--port`); el puerto `5000` del
+ejemplo privado anterior no necesita cambiarse.
+
+1. Si expiró una sesión de AWS CLI, inicia sesión de nuevo desde la EC2 cuando
+   ese método esté habilitado para tu instalación y perfil:
+
+   ```bash
+   aws login --remote
+   aws sts get-caller-identity
+   ```
+
+   Confirma que la identidad y la cuenta sean las autorizadas. Si la instancia
+   usa un IAM instance profile, prefiere ese rol y no reemplaces su
+   configuración de credenciales sin autorización.
+
+2. Consulta la IP pública y **todos** los Security Groups asociados a la
+   instancia. Sustituye el ID por el de tu EC2; la región de este ejemplo es
+   `us-east-2`:
+
+   ```bash
+   INSTANCE_ID="i-REEMPLAZA_CON_TU_ID"
+   AWS_REGION="us-east-2"
+
+   aws ec2 describe-instances \
+     --instance-ids "$INSTANCE_ID" \
+     --region "$AWS_REGION" \
+     --query 'Reservations[0].Instances[0].{PublicIP:PublicIpAddress,SecurityGroups:SecurityGroups[*].{ID:GroupId,Name:GroupName}}' \
+     --output json
+   ```
+
+   Elige el Security Group que realmente está asociado a la instancia y asigna
+   su ID. No supongas que es el primer grupo de la lista:
+
+   ```bash
+   SG_ID="sg-REEMPLAZA_CON_EL_ID_CORRECTO"
+   ```
+
+3. Para una prueba directa, permite el puerto `3000` **solo desde tu IP pública
+   de administración**, en formato CIDR `/32`:
+
+   ```bash
+   MY_IP_CIDR="TU_IP_PUBLICA/32"
+
+   aws ec2 authorize-security-group-ingress \
+     --group-id "$SG_ID" \
+     --protocol tcp \
+     --port 3000 \
+     --cidr "$MY_IP_CIDR" \
+     --region "$AWS_REGION"
+   ```
+
+   Si AWS devuelve `InvalidPermission.Duplicate`, no asumas que la regla
+   existente es segura: comprueba el CIDR de la regla antes de continuar.
+
+   ```bash
+   aws ec2 describe-security-groups \
+     --group-ids "$SG_ID" \
+     --region "$AWS_REGION" \
+     --query 'SecurityGroups[0].IpPermissions[?FromPort==`3000` && ToPort==`3000`]' \
+     --output json
+   ```
+
+4. En la terminal de la EC2, inicia el visor escuchando en las interfaces de
+   red y en el puerto de prueba:
+
+   ```bash
+   cd ~/cloud_security_lab
+   python3 scripts/report-web.py --host 0.0.0.0 --port 3000
+   ```
+
+   Mantén esa terminal abierta mientras pruebas. Desde el navegador del celular,
+   visita `http://IP_PUBLICA_DE_TU_EC2:3000`. Sustituye la dirección por la IP
+   pública actual devuelta por EC2; `0.0.0.0` es una dirección de escucha del
+   servidor, no la dirección que se escribe en el navegador.
+
+5. Al terminar, detén el visor con `Ctrl+C` y elimina la regla temporal del
+   Security Group. Usa el mismo CIDR que autorizaste:
+
+   ```bash
+   aws ec2 revoke-security-group-ingress \
+     --group-id "$SG_ID" \
+     --protocol tcp \
+     --port 3000 \
+     --cidr "$MY_IP_CIDR" \
+     --region "$AWS_REGION"
+   ```
+
+**Seguridad:** los pasos del intento incluyeron autorizar TCP/`3000` desde
+`0.0.0.0/0`. Eso permite conexiones desde cualquier IP de Internet; no dejes
+esa regla activa ni la repitas para consultar informes. El visor no tiene
+autenticación propia ni HTTPS y muestra inventario interno. Si se creó esa regla,
+revócala indicando el mismo CIDR:
+
+```bash
+aws ec2 revoke-security-group-ingress \
+  --group-id "$SG_ID" \
+  --protocol tcp \
+  --port 3000 \
+  --cidr 0.0.0.0/0 \
+  --region "$AWS_REGION"
+```
+
+Para una prueba pública posterior, limita la entrada a tu IP `/32`; para uso
+normal, prefiere el túnel SSH privado de la sección anterior.
 
 ## Evidencia y respaldos
 
